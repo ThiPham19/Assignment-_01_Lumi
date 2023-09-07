@@ -62,6 +62,7 @@ typedef enum{
 static ucg_t ucg;
 state_app_t eCurrentState;
 uint8_t LevelLed = 0;
+uint32_t TimerId;
 /******************************************************************************/
 /*                              EXPORTED DATA                                 */
 /******************************************************************************/
@@ -171,8 +172,9 @@ void DeviceStateMachine(uint8_t event)
 			{
 				LedControl_SetAllColor(LED_COLOR_GREEN, 50);
 				//thêm hàm delay
-				TimerStart("Delay", 800, 0, NULL, NULL);
+				TimerId = TimerStart("Delay", 800, 0, NULL, NULL);
 				LedControl_SetAllColor(LED_COLOR_GREEN, 0);
+				TimerStop(TimerId);
 			}
 
 			//LedControl_BlinkStart(LED_ALL_ID, LED_COLOR_GREEN, 5, 2, LED_COLOR_BLACK);
@@ -260,26 +262,26 @@ void DeviceStateMachine(uint8_t event)
 		case EVENT_OF_BUTTON_1_HOLD_1S:
 		{
 
-			TimerStart("LevelUpLed", 1000, 20, tangDoSangLed, NULL);
+			TimerId = TimerStart("LevelUpLed", 1000, 20, tangDoSangLed, NULL);
 
 		}	break;
 
 
 		case EVENT_OF_BUTTON_5_HOLD_1S:
 		{
-			TimerStart("LevelDownLed", 1000, 20, giamDoSangLed, NULL);
+			TimerId = TimerStart("LevelDownLed", 1000, 20, giamDoSangLed, NULL);
 		}	break;
 
 
 		case EVENT_OF_BUTTON_1_RELEASED_1S:
 		{
-			TimerStop(0);// cần hỏi lại
+			TimerStop(TimerId);// cần hỏi lại
 		} break;
 
 
 		case EVENT_OF_BUTTON_5_RELEASED_1S:
 		{
-			TimerStop(0);// cần hỏi lại
+			TimerStop(TimerId);// cần hỏi lại
 		} break;
 
 
