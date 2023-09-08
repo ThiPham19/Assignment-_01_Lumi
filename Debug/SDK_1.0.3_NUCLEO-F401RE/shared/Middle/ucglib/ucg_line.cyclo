@@ -1,0 +1,6 @@
+ucg_line.c:39:6:ucg_Draw90Line	1
+ucg_line.c:51:6:ucg_DrawHLine	1
+ucg_line.c:56:6:ucg_DrawVLine	1
+ucg_line.c:61:6:ucg_DrawHRLine	1
+ucg_line.c:66:6:ucg_DrawGradientLine	1
+ucg_line.c:76:6:ucg_DrawLine	9

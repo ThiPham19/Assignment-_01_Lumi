@@ -1,0 +1,13 @@
+serial.c:81:6:TimerGetCurrentTime	1
+serial.c:93:10:TimerGetElapsedTime	1
+serial.c:106:1:Serial_Init	1
+serial.c:123:1:SerialHandleEventCallback	1
+serial.c:136:1:PollRxBuff	17
+serial.c:217:1:SendACK	1
+serial.c:227:1:SendNACK	1
+serial.c:237:1:processSerialReceiver	7
+serial.c:280:1:Serial_SendPacket	5
+serial.c:322:1:CalculateCheckXOR	2
+serial.c:345:1:UART_RegBufferRx	1
+serial.c:364:1:UART_Init	1
+serial.c:431:1:USART2_IRQHandler	2

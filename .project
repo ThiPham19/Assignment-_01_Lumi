@@ -32,7 +32,7 @@
 		<link>
 			<name>SDK_1.0.3_NUCLEO-F401RE</name>
 			<type>2</type>
-			<location>C:/Users/Dell/STM32CubeIDE/workspace_1.12.1/library_copy/SDK_1.0.3_NUCLEO-F401RE</location>
+			<location>C:/Users/Dell/STM32CubeIDE/library/SDK_1.0.3_NUCLEO-F401RE</location>
 		</link>
 	</linkedResources>
 </projectDescription>

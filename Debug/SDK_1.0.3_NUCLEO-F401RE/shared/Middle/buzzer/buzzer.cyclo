@@ -1,0 +1,9 @@
+buzzer.c:63:1:BuzzerControl_Init	1
+buzzer.c:76:1:BuzzOff	3
+buzzer.c:96:1:BuzzPlay	4
+buzzer.c:128:1:BuzzerControl_SetMelody	2
+buzzer.c:143:1:BuzzerControl_SendPacketRespond	1
+buzzer.c:165:1:BUZZTIM_InitTimer	1
+buzzer.c:191:1:BUZZTIM_InitPWMChannel	1
+buzzer.c:231:1:BuzzerControl_SetDutyCycle	1
+buzzer.c:250:1:BuzzerControl_SetPreriod	1

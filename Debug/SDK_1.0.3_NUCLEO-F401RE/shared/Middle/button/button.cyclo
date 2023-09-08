@@ -1,0 +1,8 @@
+button.c:85:1:Button_Init	3
+button.c:107:1:Button_SetMode	2
+button.c:122:1:Button_GetMode	2
+button.c:136:1:Button_RegisterEventCallback	1
+button.c:150:1:Button_GetLogicInputPin	2
+button.c:165:1:ButtonScanTypeEdge	27
+button.c:250:1:ButtonScan	2
+button.c:264:13:BTNGPIO_Init	1

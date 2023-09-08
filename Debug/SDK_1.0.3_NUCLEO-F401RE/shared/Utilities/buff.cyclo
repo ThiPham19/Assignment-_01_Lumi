@@ -1,0 +1,7 @@
+buff.c:53:1:bufInit	1
+buff.c:72:1:bufNumItems	1
+buff.c:85:1:bufIsFull	1
+buff.c:98:1:bufIsEmpty	1
+buff.c:111:1:bufFlush	1
+buff.c:129:1:bufEnDat	3
+buff.c:160:1:bufDeDat	3

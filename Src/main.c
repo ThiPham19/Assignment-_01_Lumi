@@ -60,9 +60,9 @@ typedef enum{
 /*                              PRIVATE DATA                                  */
 /******************************************************************************/
 static ucg_t ucg;
-state_app_t eCurrentState;
-uint8_t LevelLed = 0;
-uint32_t TimerId;
+static state_app_t eCurrentState;
+static uint8_t IdTimer = NO_TIMER;
+static uint8_t levelLed = 0;
 /******************************************************************************/
 /*                              EXPORTED DATA                                 */
 /******************************************************************************/
@@ -77,6 +77,9 @@ void DeviceStateMachine(uint8_t event);
 void LoadConfiguration(void);
 void AppInitCommon(void);
 
+void LedUp(void *data);
+void LedDown(void *data);
+
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
 /******************************************************************************/
@@ -86,20 +89,14 @@ void AppInitCommon()
 {
 	SystemCoreClockUpdate();
 	TimerInit();
-	EventSchedulerInit(&AppStateManager);
 	EventButton_Init();
 	BuzzerControl_Init();
 	LedControl_Init();
 	LightSensor_Init(ADC_READ_MODE_DMA);
 	TemHumSensor_Init();
 
-	/*************		setup LCD		****************/
-	Ucglib4WireSWSPI_begin(&ucg, UCG_FONT_MODE_SOLID);
-	ucg_ClearScreen(&ucg);
-	ucg_SetFont(&ucg, ucg_font_helvR08_tf);
-	ucg_SetColor(&ucg, 0, 255, 255, 255);
-	ucg_SetColor(&ucg, 1, 0, 0, 0);
-	ucg_SetRotate180(&ucg);
+	EventSchedulerInit(AppStateManager);
+
 }
 
 static void AppStateManager(uint8_t event)
@@ -139,23 +136,38 @@ static state_app_t GetStateApp(void)
 }
 /*hàm cho câu 1: hiển thị dòng chữ lên LCD*/
 void LoadConfiguration(void){
-	ucg_DrawString(&ucg, 0, 12, 0, "IOT Programming by Lumi Smarthome");
+
+	//hỏi anh trung tại sao config LCD trên appInitCommon ko đc
+
+	/*************		setup LCD		****************/
+	Ucglib4WireSWSPI_begin(&ucg, UCG_FONT_MODE_SOLID);
+	ucg_ClearScreen(&ucg);
+
+	ucg_SetFont(&ucg, ucg_font_helvR08_tf);
+	ucg_SetColor(&ucg, 0, 255, 255, 255);
+	ucg_SetColor(&ucg, 1, 0, 0, 0);
+	ucg_SetRotate180(&ucg);
+	ucg_DrawString(&ucg, 5, 12, 0, "IOT Programming");
+	ucg_DrawString(&ucg, 5, 26, 0, "by Lumi Smarthome");
 }
 
-void tangDoSangLed()
-			{
-				while(LevelLed < 100)
-				{
-					LevelLed ++;
-					LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_GREEN, LevelLed);
-				}
-			}
-void giamDoSangLed()
-			{
-				while(LevelLed > 0)
-				LevelLed --;
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_GREEN, LevelLed);
-			}
+
+static uint8_t count = 0;
+static uint8_t brightness = 0;
+void blinkLed(void *data) { //hàm nháy led sau 5 lần nhấn B3 trên board
+    if (count < 10) { //cứ 2 giá trị của count là 1 lần bật&tắt
+        if (brightness == 0) {
+            brightness = 50;
+        } else {
+            brightness = 0;
+        }
+
+        // Bật/tắt LED với độ sáng mới
+        LedControl_SetAllColor(LED_COLOR_GREEN, brightness);
+        count++;
+    }
+}
+
 
 void DeviceStateMachine(uint8_t event)
 {
@@ -166,42 +178,39 @@ void DeviceStateMachine(uint8_t event)
 	thị thông tin sau thiết bị lên màn hình LCD*/
 		case EVENT_OF_BUTTON_0_PRESS_5_TIMES:
 		{
-			uint8_t count = 5;
-
-			while(count > 0)
+			if(IdTimer != NO_TIMER)
 			{
-				LedControl_SetAllColor(LED_COLOR_GREEN, 50);
-				//thêm hàm delay
-				TimerId = TimerStart("Delay", 800, 0, NULL, NULL);
-				LedControl_SetAllColor(LED_COLOR_GREEN, 0);
-				TimerStop(TimerId);
+				TimerStop(IdTimer);
+				IdTimer = NO_TIMER;
 			}
+			count = 0;
+			IdTimer = TimerStart("BlinkTimer", 500, 10,(void*) blinkLed, NULL);
 
-			//LedControl_BlinkStart(LED_ALL_ID, LED_COLOR_GREEN, 5, 2, LED_COLOR_BLACK);
 			ucg_ClearScreen(&ucg);
-			ucg_SetFont(&ucg, ucg_font_helvR08_tf);
-			ucg_SetColor(&ucg, 0, 255, 255, 255);
-			ucg_SetColor(&ucg, 1, 0, 0, 0);
-			ucg_SetRotate180(&ucg);
-			ucg_DrawString(&ucg, 0, 0, 0, "Device: Board STM32 Nucleo");
-			ucg_DrawString(&ucg, 1, 0, 0, "Code: STM32F401RE_NUCLEO");
-			ucg_DrawString(&ucg, 2, 0, 0, "Manufacturer: STMicroelectronics");
-			ucg_DrawString(&ucg, 3, 0, 0, "Kit expansion: Lumi Smarthome");
-			ucg_DrawString(&ucg, 4, 0, 0, "Project: Simulator touch switch");
+			ucg_DrawString(&ucg, 0, 12, 0, "DEVICE: Board STM32");
+			ucg_DrawString(&ucg, 0, 24, 0, "Nucleo");
+			ucg_DrawString(&ucg, 0, 36, 0, "CODE: ");
+			ucg_DrawString(&ucg, 0, 48, 0, "STM32F401RE_NUCLEO");
+			ucg_DrawString(&ucg, 0, 60, 0, "MANUFACTURER: ");
+			ucg_DrawString(&ucg, 0, 72, 0, "STMicroelectronics");
+			ucg_DrawString(&ucg, 0, 84, 0, "KIT EXPANSION: ");
+			ucg_DrawString(&ucg, 0, 96, 0, "Lumi Smarthome");
+			ucg_DrawString(&ucg, 0, 108, 0, "PROJECT: ");
+			ucg_DrawString(&ucg, 0, 120, 0, "Simulator touch switch");
+
 		}	break;
 
 
-		uint8_t button1count;
+		static uint8_t button1count = 0;
 		case EVENT_OF_BUTTON_1_PRESS_LOGIC:
 		{
-			button1count = 0;
 			if(button1count == 0)
 			{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_RED, 50);
+				LedControl_SetAllColor(LED_COLOR_RED, 50);
 				BuzzerControl_SetMelody(pbeep);
 				button1count = 1;
 			}else{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_RED, 0);
+				LedControl_SetAllColor(LED_COLOR_RED, 0);
 				BuzzerControl_SetMelody(pbeep);
 				button1count = 0;
 			}
@@ -209,79 +218,96 @@ void DeviceStateMachine(uint8_t event)
 		}	break;
 
 
-		uint8_t button2count;
+		static uint8_t button2count = 0;
 		case EVENT_OF_BUTTON_2_PRESS_LOGIC:
 		{
-			button2count = 0;
 			if(button2count == 0)
 			{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_GREEN, 50);
+				LedControl_SetAllColor(LED_COLOR_GREEN, 50);
 				BuzzerControl_SetMelody(pbeep);
 				button2count = 1;
 			}else{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_GREEN, 0);
+				LedControl_SetAllColor(LED_COLOR_GREEN, 0);
 				BuzzerControl_SetMelody(pbeep);
 				button2count = 0;
 			}
 		}	break;
 
-		uint8_t button4count;
+		static uint8_t button4count = 0;
 		case EVENT_OF_BUTTON_4_PRESS_LOGIC:
 		{
-			button4count = 0;
 			if(button4count == 0)
 			{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_WHITE, 50);
+				LedControl_SetAllColor(LED_COLOR_WHITE, 50);
 				BuzzerControl_SetMelody(pbeep);
 				button4count = 1;
 			}else{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_WHITE, 0);
+				LedControl_SetAllColor(LED_COLOR_WHITE, 0);
 				BuzzerControl_SetMelody(pbeep);
 				button4count = 0;
 			}
 		}	break;
 
 
-		uint8_t button5count;
+		static uint8_t button5count = 0;
 		case EVENT_OF_BUTTON_5_PRESS_LOGIC:
 		{
-			button5count = 0;
 			if(button5count == 0)
 			{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_BLUE, 50);
+				LedControl_SetAllColor(LED_COLOR_BLUE, 50);
 				BuzzerControl_SetMelody(pbeep);
 				button5count = 1;
 			}else{
-				LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_BLUE, 0);
+				LedControl_SetAllColor(LED_COLOR_BLUE, 0);
 				BuzzerControl_SetMelody(pbeep);
 				button5count = 0;
 			}
 		}	break;
 
 
+
+
 		case EVENT_OF_BUTTON_1_HOLD_1S:
 		{
+			if(IdTimer != NO_TIMER)
+			{
+				TimerStop(IdTimer);
+				IdTimer = NO_TIMER;
+			}
 
-			TimerId = TimerStart("LevelUpLed", 1000, 20, tangDoSangLed, NULL);
-
+			IdTimer = TimerStart("LedUp", 50, TIMER_REPEAT_FOREVER, (void*)LedUp, NULL);
 		}	break;
 
 
 		case EVENT_OF_BUTTON_5_HOLD_1S:
 		{
-			TimerId = TimerStart("LevelDownLed", 1000, 20, giamDoSangLed, NULL);
+			if(IdTimer != NO_TIMER)
+			{
+				TimerStop(IdTimer);
+				IdTimer = NO_TIMER;
+			}
+
+			IdTimer = TimerStart("LedDown", 50, TIMER_REPEAT_FOREVER, (void*)LedDown, NULL);
 		}	break;
 
 
 		case EVENT_OF_BUTTON_1_RELEASED_1S:
 		{
-			TimerStop(TimerId);// cần hỏi lại
+			if(IdTimer != NO_TIMER)
+			{
+				TimerStop(IdTimer);
+				IdTimer = NO_TIMER;
+			}
 		} break;
 
 
 		case EVENT_OF_BUTTON_5_RELEASED_1S:
 		{
-			TimerStop(TimerId);// cần hỏi lại
+			if(IdTimer != NO_TIMER)
+			{
+				TimerStop(IdTimer);
+				IdTimer = NO_TIMER;
+			}
 		} break;
 
 
@@ -290,37 +316,56 @@ void DeviceStateMachine(uint8_t event)
 	}
 }
 
+void LedUp(void *data)
+{
+	if(levelLed < 100)
+	{
+		LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_GREEN, levelLed);
+		levelLed ++;
+	}
+}
+void LedDown(void *data)
+{
+	if(levelLed > 0)
+	{
+		LedControl_SetColorGeneral(LED_KIT_ID0, LED_COLOR_GREEN, levelLed);
+		levelLed --;
+	}
+}
 void Task_multiSensorScan()
 {
+	ucg_ClearScreen(&ucg);
+
 	//hiển thị nhiệt độ
 	char original_temp[100] = "Temp = ";
  	uint32_t temp = TemHumSensor_GetTemp();
  	sprintf(original_temp,"%s%d%s",original_temp,temp,"oC");
- 	ucg_DrawString(&ucg, 2, 1, 0, original_temp);
+ 	ucg_DrawString(&ucg, 0, 12, 0, original_temp);
 
  	char original_humi[50] = "Humi = ";
 	uint32_t humi = TemHumSensor_GetHumi();
  	sprintf(original_humi,"%s%d%s",original_humi,humi,"%");
- 	ucg_DrawString(&ucg, 3, 1, 0, original_humi);
+ 	ucg_DrawString(&ucg, 0, 36, 0, original_humi);
 
  	char original_light[50] = "Humi = ";
 	uint32_t light = LightSensor_MeasureUseDMAMode();
  	sprintf(original_light,"%s%d%s",original_light,light,"%");
- 	ucg_DrawString(&ucg, 4, 1, 0, original_light);
+ 	ucg_DrawString(&ucg, 0, 60, 0, original_light);
 }
 
+
+static uint32_t lastUpdateTime;
+static uint32_t updateInterval = 1000;//1000 milisecond
 void MultiSensorScan()
 {
-    uint32_t lastUpdateTime = GetMilSecTick();
-    uint32_t updateInterval = 1000; // 1 giây (1000 millisecond)
-
-    while (1) {
+//    uint32_t lastUpdateTime = GetMilSecTick();
+//    uint32_t updateInterval = 1000; // 1 giây (1000 millisecond)
         uint32_t currentTime = GetMilSecTick();
 
         if (currentTime - lastUpdateTime >= updateInterval) {
             // Đã đủ thời gian để cập nhật nhiệt độ và độ ẩm
             // Thực hiện việc cập nhật thông tin từ cảm biến và hiển thị lên LCD
-            Task_multiSensorScan();
+            //Task_multiSensorScan();
 
             // Cập nhật thời gian của lần cập nhật cuối cùng
             lastUpdateTime = currentTime;
@@ -329,9 +374,9 @@ void MultiSensorScan()
         // Sleep để tránh lặp quá nhanh và gây tải CPU không cần thiết
         // Thời gian sleep có thể điều chỉnh tùy ý
         // Sleep 1 giây trước khi kiểm tra lại
-        TimerStart("Delay_1s", 1000, 0, NULL, NULL);
-    }
+        Task_multiSensorScan();
 }
+
 int main(void){
 	AppInitCommon();
 	SetStateApp(STATE_APP_STARTUP);
@@ -341,6 +386,6 @@ int main(void){
 	{
 		processTimerScheduler();
 		processEventScheduler();
-		MultiSensorScan();
+		//MultiSensorScan();
 	}
 }

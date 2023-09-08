@@ -1,0 +1,6 @@
+utilities.c:49:1:searchArrayInArray	6
+utilities.c:83:1:hex2Char	2
+utilities.c:101:1:String2Uint	5
+utilities.c:142:1:memsetl	2
+utilities.c:159:1:memcpyl	2
+utilities.c:176:1:valInRange	3

@@ -11,6 +11,16 @@ RM := rm -rf
 -include sources.mk
 -include Startup/subdir.mk
 -include Src/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Utilities/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/ucglib/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/serial/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/sensor/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/rtos/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/led/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/buzzer/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Middle/button/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Drivers/STM32F401RE_StdPeriph_Driver/src/subdir.mk
+-include SDK_1.0.3_NUCLEO-F401RE/shared/Drivers/CMSIS/Source/subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -60,7 +70,7 @@ main-build: TouchSwitch_F103NUCLEO_V1.0.0.elf secondary-outputs
 
 # Tool invocations
 TouchSwitch_F103NUCLEO_V1.0.0.elf TouchSwitch_F103NUCLEO_V1.0.0.map: $(OBJS) $(USER_OBJS) C:\Users\Dell\STM32CubeIDE\workspace_1.12.1\TouchSwitch_F103NUCLEO_V1.0.0\STM32F401RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "TouchSwitch_F103NUCLEO_V1.0.0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Dell\STM32CubeIDE\workspace_1.12.1\TouchSwitch_F103NUCLEO_V1.0.0\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="TouchSwitch_F103NUCLEO_V1.0.0.map" -Wl,--gc-sections -static -L"C:\Users\Dell\STM32CubeIDE\workspace_1.12.1\library_copy\SDK_1.0.3_NUCLEO-F401RE\lib_stm" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "TouchSwitch_F103NUCLEO_V1.0.0.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Dell\STM32CubeIDE\workspace_1.12.1\TouchSwitch_F103NUCLEO_V1.0.0\STM32F401RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="TouchSwitch_F103NUCLEO_V1.0.0.map" -Wl,--gc-sections -static -L"C:\Users\Dell\STM32CubeIDE\library\SDK_1.0.3_NUCLEO-F401RE\lib_stm" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
