@@ -21,6 +21,7 @@
 /*                              INCLUDE FILES                                 */
 /******************************************************************************/
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -63,6 +64,7 @@ static ucg_t ucg;
 static state_app_t eCurrentState;
 static uint8_t IdTimer = NO_TIMER;
 static uint8_t levelLed = 0;
+static uint8_t IdTimerCancle;
 /******************************************************************************/
 /*                              EXPORTED DATA                                 */
 /******************************************************************************/
@@ -79,6 +81,8 @@ void AppInitCommon(void);
 
 void LedUp(void *data);
 void LedDown(void *data);
+
+void cancleTimer(void *data);
 
 /******************************************************************************/
 /*                            EXPORTED FUNCTIONS                              */
@@ -332,30 +336,52 @@ void LedDown(void *data)
 		levelLed --;
 	}
 }
+static char src1[20];
+static char src2[20];
+static char src3[20];
+static uint8_t count_clear = 0;
 void Task_multiSensorScan()
 {
+	uint8_t temp = TemHumSensor_GetTemp();
+	uint8_t humi = TemHumSensor_GetHumi();
+	uint16_t light= LightSensor_MeasureUseDMAMode();
+
+	if(count_clear == 0){
 	ucg_ClearScreen(&ucg);
+	count_clear = 1;
+	}
 
 	//hiển thị nhiệt độ
-	char original_temp[100] = "Temp = ";
- 	uint32_t temp = TemHumSensor_GetTemp();
- 	sprintf(original_temp,"%s%d%s",original_temp,temp,"oC");
- 	ucg_DrawString(&ucg, 0, 12, 0, original_temp);
+	memset(src1,0,sizeof(src1));
+	sprintf(src1,"Temp = %d oC", temp);
+	ucg_DrawString(&ucg, 0, 12, 0, src1);
 
- 	char original_humi[50] = "Humi = ";
-	uint32_t humi = TemHumSensor_GetHumi();
- 	sprintf(original_humi,"%s%d%s",original_humi,humi,"%");
- 	ucg_DrawString(&ucg, 0, 36, 0, original_humi);
 
- 	char original_light[50] = "Humi = ";
-	uint32_t light = LightSensor_MeasureUseDMAMode();
- 	sprintf(original_light,"%s%d%s",original_light,light,"%");
- 	ucg_DrawString(&ucg, 0, 60, 0, original_light);
+	//hiển thị độ ẩm
+	memset(src2,0,sizeof(src2));
+	sprintf(src2,"Humi = %3d %%", humi);
+	ucg_DrawString(&ucg, 0, 48, 0, src2);
+
+
+	//hiển thị ánh sáng
+	memset(src3,0,sizeof(src3));
+	sprintf(src3,"Light = %d lux", light);
+	ucg_DrawString(&ucg, 0, 60, 0, src3);
+
+
 }
 
 
 static uint32_t lastUpdateTime;
-static uint32_t updateInterval = 1000;//1000 milisecond
+
+static uint32_t updateInterval = 2s000;// milisecond
+
+
+void cancleTimer(void *data){
+	if(IdTimerCancle != NO_TIMER){
+		TimerStop(IdTimerCancle);
+	}
+}
 void MultiSensorScan()
 {
 //    uint32_t lastUpdateTime = GetMilSecTick();
@@ -369,23 +395,25 @@ void MultiSensorScan()
 
             // Cập nhật thời gian của lần cập nhật cuối cùng
             lastUpdateTime = currentTime;
+            Task_multiSensorScan();
+            IdTimerCancle = TimerStart("delay", 500, 0, (void*)cancleTimer, NULL);
         }
 
         // Sleep để tránh lặp quá nhanh và gây tải CPU không cần thiết
         // Thời gian sleep có thể điều chỉnh tùy ý
         // Sleep 1 giây trước khi kiểm tra lại
-        Task_multiSensorScan();
+
 }
 
 int main(void){
 	AppInitCommon();
 	SetStateApp(STATE_APP_STARTUP);
 	EventSchedulerAdd(EVENT_APP_INIT);
-
+	lastUpdateTime =  GetMilSecTick();
 	while(1)
 	{
 		processTimerScheduler();
 		processEventScheduler();
-		//MultiSensorScan();
+		MultiSensorScan();
 	}
 }
