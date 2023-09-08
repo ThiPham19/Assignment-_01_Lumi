@@ -374,7 +374,7 @@ void Task_multiSensorScan()
 
 static uint32_t lastUpdateTime;
 
-static uint32_t updateInterval = 2s000;// milisecond
+static uint32_t updateInterval = 2000;// milisecond
 
 
 void cancleTimer(void *data){
@@ -402,6 +402,7 @@ void MultiSensorScan()
         // Sleep để tránh lặp quá nhanh và gây tải CPU không cần thiết
         // Thời gian sleep có thể điều chỉnh tùy ý
         // Sleep 1 giây trước khi kiểm tra lại
+        // Sleep 1 giây trước khi kiểm tra lại
 
 }
 
@@ -415,5 +416,6 @@ int main(void){
 		processTimerScheduler();
 		processEventScheduler();
 		MultiSensorScan();
+
 	}
 }

@@ -15717,9 +15717,9 @@ void MultiSensorScan()
  8005e1e:	461a      	mov	r2, r3
  8005e20:	4b06      	ldr	r3, [pc, #24]	; (8005e3c <MultiSensorScan+0x58>)
  8005e22:	701a      	strb	r2, [r3, #0]
-
         // Sleep để tránh lặp quá nhanh và gây tải CPU không cần thiết
         // Thời gian sleep có thể điều chỉnh tùy ý
+        // Sleep 1 giây trước khi kiểm tra lại
         // Sleep 1 giây trước khi kiểm tra lại
 
 }
